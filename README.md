@@ -10,6 +10,8 @@ A high-performance Bitcoin block bitmap data tracker optimized for GeniiData's f
 - **API Optimization**: Handles compression, retries, and error recovery
 - **Free Tier Optimized**: Efficient quota usage (~5% daily on 1000 requests/day)
 - **Progress Tracking**: JSON-based backfill progress monitoring
+- **Web Search Interface**: HTML interface for searching bitmap data
+- **GitHub Pages Ready**: Deploy-ready web interface for public access
 
 ## Quick Start
 
@@ -37,10 +39,44 @@ A high-performance Bitcoin block bitmap data tracker optimized for GeniiData's f
 ├── csv_sorter.js          # Standalone CSV sorting utility
 ├── bitmap_data.csv        # Output data (sequential block order)
 ├── backfill_progress.json # Progress tracking
+├── index.html             # Web search interface for GitHub Pages
 ├── error.log              # Error logging
 ├── output.log             # Runtime logging
 └── archive/               # Archived files (tests, docs, old versions)
 ```
+
+## Web Search Interface
+
+The repository includes a modern web interface (`index.html`) for searching Bitcoin bitmap data:
+
+### Features
+- **🔍 Dual Search**: Search by block number or inscription ID
+- **📱 Responsive Design**: Works on desktop and mobile devices
+- **📊 Live Statistics**: Shows total bitmaps, block range, and last update
+- **🔗 External Links**: Direct links to Ordinals.com and Mempool.space
+- **📋 Copy Functions**: One-click copy for block numbers and inscription IDs
+- **⌨️ Keyboard Shortcuts**: Ctrl+K to focus search, Escape to clear
+
+### GitHub Pages Deployment
+1. **Enable GitHub Pages** in repository settings
+2. **Set source** to "Deploy from a branch" → `main` branch → `/ (root)`
+3. **Access** your search interface at: `https://yourusername.github.io/repositoryname`
+
+### Local Testing
+```bash
+# Open the HTML file directly in a browser
+open index.html
+# Or serve with a simple HTTP server
+python -m http.server 8000
+# Then visit: http://localhost:8000
+```
+
+The web interface automatically loads the CSV data and provides:
+- Real-time search functionality
+- Statistics about the dataset
+- Professional UI with smooth animations
+- Mobile-responsive design
+- Copy-to-clipboard functionality
 
 ## Current Status
 
