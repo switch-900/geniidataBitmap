@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Bitmap Search - GeniiData Tracker</title>
+    <style>
+        :root {
+            --btc-orange: #f7931a;
+            --btc-dark: #222222;
+            --btc-light: #fff3e0;
+            --btc-gray: #f5f5f5;
+            --btc-blue: #1a53f7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--btc-orange) 0%, var(--btc-dark) 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--btc-orange) 0%, #ffb347 100%);
+            color: var(--btc-dark);
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(247, 147, 26, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .stats {
+            background: var(--btc-light);
+            padding: 20px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #ffe0b2;
+        }
+
+        .stat-item {
+            text-align: center;
+            margin: 10px;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--btc-orange);
+        }
+
+        .stat-label {
+            color: #b26a00;
+            font-size: 0.9em;
+        }
+
+        .search-section {
+            padding: 30px;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 15px;
+            border: 2px solid #ffe0b2;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: var(--btc-gray);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--btc-orange);
+            box-shadow: 0 0 0 3px rgba(247, 147, 26, 0.1);
+        }
+
+        .search-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, var(--btc-orange) 0%, #ffb347 100%);
+            color: var(--btc-dark);
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+            font-weight: bold;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(247, 147, 26, 0.3);
+            background: linear-gradient(135deg, #ffb347 0%, var(--btc-orange) 100%);
+        }
+
+        .clear-btn {
+            padding: 15px 30px;
+            background: #b26a00;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .clear-btn:hover {
+            background: #a05a00;
+            transform: translateY(-2px);
+        }
+
+        .search-tips {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .search-tips h3 {
+            color: var(--btc-orange);
+            margin-bottom: 10px;
+        }
+
+        .search-tips ul {
+            color: #424242;
+            margin-left: 20px;
+        }
+
+        .search-tips li {
+            margin-bottom: 5px;
+        }
+
+        .results-section {
+            margin-top: 30px;
+        }
+
+        .result-card {
+            background: var(--btc-gray);
+            border: 2px solid #ffe0b2;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .result-card:hover {
+            border-color: var(--btc-orange);
+            box-shadow: 0 5px 15px rgba(247, 147, 26, 0.1);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .result-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--btc-dark);
+        }
+
+        .result-badge {
+            background: linear-gradient(135deg, var(--btc-orange) 0%, #ffb347 100%);
+            color: var(--btc-dark);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .detail-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ffe0b2;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #b26a00;
+            margin-bottom: 8px;
+        }
+
+        .detail-value {
+            font-family: 'Courier New', monospace;
+            color: var(--btc-blue);
+            word-break: break-all;
+            background: var(--btc-light);
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .detail-value:hover {
+            background: #ffe0b2;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #b26a00;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #b26a00;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #b26a00;
+            background: var(--btc-light);
+            border-radius: 10px;
+        }
+
+        .no-results h3 {
+            margin-bottom: 10px;
+            color: var(--btc-dark);
+        }
+
+        .footer {
+            background: var(--btc-dark);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+
+        .footer a {
+            color: var(--btc-orange);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .search-container {
+                flex-direction: column;
+            }
+
+            .result-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .detail-item {
+                min-width: 100%;
+            }
+        }
+
+        .copy-btn {
+            background: var(--btc-orange);
+            color: var(--btc-dark);
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            cursor: pointer;
+            margin-left: 8px;
+            transition: background 0.2s ease;
+            font-weight: bold;
+        }
+
+        .copy-btn:hover {
+            background: #ffb347;
+        }
+
+        .copied {
+            background: #1a53f7 !important;
+            color: white !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🪙 Bitcoin Bitmap Search</h1>
+            <p>Search Bitcoin Bitmap inscriptions by block number or inscription ID</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalBitmaps">Loading...</div>
+                <div class="stat-label">Total Bitmaps</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="blockRange">Loading...</div>
+                <div class="stat-label">Block Range</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="lastUpdated">Loading...</div>
+                <div class="stat-label">Last Updated</div>
+            </div>
+        </div>
+
+        <div class="search-section">
+            <div class="search-container">                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="Enter block number (840000+), bitmap number (0-839999), or inscription ID"
+                >
+                <button onclick="searchBitmap()" class="search-btn">🔍 Search</button>
+                <button onclick="clearSearch()" class="clear-btn">✖️ Clear</button>
+            </div>            <div class="search-tips">
+                <h3>💡 Search Tips</h3>
+                <ul>
+                    <li><strong>Block Number (840000+):</strong> Enter any block number to find its bitmap inscription from our CSV data</li>
+                    <li><strong>Legacy Bitmap (0-839999):</strong> Enter a bitmap number to lookup via on-chain index (OCI)</li>
+                    <li><strong>Inscription ID:</strong> Enter a full inscription ID to find which block it belongs to</li>
+                    <li><strong>Partial Search:</strong> Enter partial inscription ID or block number for fuzzy matching</li>
+                    <li><strong>Case Insensitive:</strong> Search is not case sensitive</li>
+                    <li><strong>⚡ OCI Lookup:</strong> Bitmap numbers 0-839,999 use real-time on-chain data lookup</li>
+                </ul>
+            </div>
+
+            <div id="searchResults" class="results-section"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>
+            🚀 Powered by <a href="https://github.com/switch-900/geniidataBitmap" target="_blank">GeniiData Bitcoin Bitmap Tracker</a> 
+            | 📊 Data automatically updated via Git commits
+            | 🔗 <a href="https://geniidata.com" target="_blank">GeniiData API</a>
+        </p>
+    </div>    <!-- Import Bitcoin Bitmap OCI Module -->
+    <script type="module">
+        // Import OCI functions from ordinals.com
+        import { getBitmapSat, getBitmapSatIndex, getBitmapInscriptionId } from 'https://ordinals.com/content/840bc0df4ffc5a7ccedbee35e97506c9577160e233982e627d0045d06366e362i0?origin=https://ordinals.com';
+        
+        // Make OCI functions available globally
+        window.getBitmapSat = getBitmapSat;
+        window.getBitmapSatIndex = getBitmapSatIndex;
+        window.getBitmapInscriptionId = getBitmapInscriptionId;
+    </script>
+    
+    <script>        let bitmapData = [];
+        let isLoading = false;
+        let ociCache = {};
+
+        // Load CSV data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBitmapData();
+            
+            // Add enter key support for search
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchBitmap();
+                }
+            });
+        });
+
+        async function loadBitmapData() {
+            try {
+                const response = await fetch('bitmap_data.csv');
+                const csvText = await response.text();
+                
+                // Parse CSV
+                const lines = csvText.trim().split('\n');
+                const headers = lines[0].split(',');
+                
+                bitmapData = [];
+                for (let i = 1; i < lines.length; i++) {
+                    if (lines[i].trim()) {
+                        const values = lines[i].split(',');
+                        bitmapData.push({
+                            blockNumber: parseInt(values[0]),
+                            inscriptionId: values[1]
+                        });
+                    }
+                }
+
+                // Update statistics
+                updateStats();
+                console.log(`Loaded ${bitmapData.length} bitmap entries`);
+                
+            } catch (error) {
+                console.error('Error loading bitmap data:', error);
+                document.getElementById('searchResults').innerHTML = `
+                    <div class="no-results">
+                        <h3>❌ Error Loading Data</h3>
+                        <p>Failed to load bitmap data. Please check the CSV file exists and is accessible.</p>
+                    </div>
+                `;
+            }
+        }        function updateStats() {
+            if (bitmapData.length === 0) return;
+
+            // Total bitmaps (CSV data + OCI range)
+            const csvCount = bitmapData.length;
+            const ociCount = 840000; // 0-839,999 range
+            document.getElementById('totalBitmaps').textContent = `${(csvCount + ociCount).toLocaleString()} (${csvCount.toLocaleString()} CSV + ${ociCount.toLocaleString()} OCI)`;
+
+            // Block range
+            const blocks = bitmapData.map(b => b.blockNumber).sort((a, b) => a - b);
+            const minBlock = blocks[0];
+            const maxBlock = blocks[blocks.length - 1];
+            document.getElementById('blockRange').textContent = `0-839,999 (OCI) + ${minBlock.toLocaleString()}-${maxBlock.toLocaleString()} (CSV)`;
+
+            // Last updated (use current date since data is auto-updated)
+            const now = new Date();
+            const timeString = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('lastUpdated').textContent = timeString;
+        }        function searchBitmap() {
+            const query = document.getElementById('searchInput').value.trim();
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (!query) {
+                resultsDiv.innerHTML = `
+                    <div class="no-results">
+                        <h3>🔍 Enter Search Term</h3>
+                        <p>Please enter a block number or inscription ID to search.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (isLoading) return;
+            
+            isLoading = true;
+            resultsDiv.innerHTML = '<div class="loading">🔍 Searching bitmap data...</div>';
+
+            // Simulate slight delay for better UX
+            setTimeout(() => {
+                performSearch(query);
+                isLoading = false;
+            }, 300);
+        }
+
+        function performSearch(query) {
+            const resultsDiv = document.getElementById('searchResults');
+            let results = [];
+
+            // Check if query is a number
+            const queryAsNumber = parseInt(query);
+            const isNumericQuery = !isNaN(queryAsNumber) && queryAsNumber.toString() === query.trim();
+
+            if (isNumericQuery) {
+                // Check if it's a legacy bitmap number (0-839,999)
+                if (queryAsNumber >= 0 && queryAsNumber <= 839999) {
+                    // OCI bitmap lookup
+                    performOCISearch(queryAsNumber);
+                    return;
+                } else {
+                    // Search by block number in CSV data (840000+)
+                    results = bitmapData.filter(bitmap => bitmap.blockNumber === queryAsNumber);
+                    
+                    // If no exact match, search for blocks containing the number
+                    if (results.length === 0) {
+                        results = bitmapData.filter(bitmap => 
+                            bitmap.blockNumber.toString().includes(query)
+                        );
+                    }
+                }
+            } else {
+                // Search by inscription ID (full or partial)
+                const queryLower = query.toLowerCase();
+                results = bitmapData.filter(bitmap => 
+                    bitmap.inscriptionId.toLowerCase().includes(queryLower)
+                );
+            }
+
+            displayResults(results, query, isNumericQuery);
+        }
+
+        // Bitcoin Bitmap OCI Functions (using imported module)
+        async function performOCISearch(bitmapNumber) {
+            const resultsDiv = document.getElementById('searchResults');
+            
+            try {
+                resultsDiv.innerHTML = '<div class="loading">🔍 Looking up bitmap via on-chain index...</div>';
+                
+                // Check cache first
+                if (ociCache[bitmapNumber]) {
+                    displayOCIResult(ociCache[bitmapNumber], bitmapNumber);
+                    return;
+                }
+
+                // Get inscription ID from OCI using imported functions
+                const inscriptionId = await window.getBitmapInscriptionId(bitmapNumber);
+                const sat = await window.getBitmapSat(bitmapNumber);
+                
+                const result = {
+                    bitmapNumber,
+                    inscriptionId,
+                    sat,
+                    isOCI: true
+                };
+                
+                // Cache the result
+                ociCache[bitmapNumber] = result;
+                
+                displayOCIResult(result, bitmapNumber);
+                
+            } catch (error) {
+                console.error('OCI lookup error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="no-results">
+                        <h3>❌ OCI Lookup Failed</h3>
+                        <p>Failed to lookup bitmap ${bitmapNumber} via on-chain index.</p>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p><em>This may be due to network issues or ordinals.com being unavailable.</em></p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayOCIResult(result, bitmapNumber) {
+            const resultsDiv = document.getElementById('searchResults');
+            
+            const html = `
+                <h3>⚡ OCI Lookup Result for Bitmap #${bitmapNumber}</h3>
+                <div class="result-card">
+                    <div class="result-header">
+                        <div class="result-title">Legacy Bitcoin Bitmap #${bitmapNumber}</div>
+                        <div class="result-badge" style="background: #1a53f7;">OCI Lookup</div>
+                    </div>
+                    <div class="result-details">
+                        <div class="detail-item">
+                            <div class="detail-label">🪙 Bitmap Number</div>
+                            <div class="detail-value" onclick="copyToClipboard('${bitmapNumber}', this)">
+                                ${bitmapNumber.toLocaleString()}
+                                <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('${bitmapNumber}', this)">Copy</button>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">🔢 Sat Number</div>
+                            <div class="detail-value" onclick="copyToClipboard('${result.sat}', this)">
+                                ${result.sat.toLocaleString()}
+                                <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('${result.sat}', this)">Copy</button>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">🔗 Inscription ID</div>
+                            <div class="detail-value" onclick="copyToClipboard('${result.inscriptionId}', this)">
+                                ${result.inscriptionId}
+                                <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('${result.inscriptionId}', this)">Copy</button>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">🌐 External Links</div>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <a href="https://ordinals.com/inscription/${result.inscriptionId}" target="_blank" 
+                                   style="background: var(--btc-orange); color: var(--btc-dark); padding: 8px 12px; border-radius: 5px; text-decoration: none; font-size: 0.9em; font-weight: bold;">
+                                    View on Ordinals.com
+                                </a>
+                                <a href="https://ordinals.com/sat/${result.sat}" target="_blank" 
+                                   style="background: #1a53f7; color: white; padding: 8px 12px; border-radius: 5px; text-decoration: none; font-size: 0.9em; font-weight: bold;">
+                                    View Sat Details
+                                </a>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">ℹ️ Data Source</div>
+                            <div style="color: #1a53f7; font-weight: bold;">
+                                On-Chain Index (OCI) - Real-time lookup from ordinals.com
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            resultsDiv.innerHTML = html;
+        }
+
+        function displayResults(results, query, isNumericQuery) {
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (results.length === 0) {
+                resultsDiv.innerHTML = `
+                    <div class="no-results">
+                        <h3>😞 No Results Found</h3>
+                        <p>No bitmaps found for "${query}". Try:</p>
+                        <ul style="text-align: left; margin-top: 10px;">
+                            <li>Checking the spelling</li>
+                            <li>Using a different block number</li>
+                            <li>Using a partial inscription ID</li>
+                            <li>Trying a block number between ${Math.min(...bitmapData.map(b => b.blockNumber)).toLocaleString()} and ${Math.max(...bitmapData.map(b => b.blockNumber)).toLocaleString()}</li>
+                        </ul>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort results
+            results.sort((a, b) => a.blockNumber - b.blockNumber);
+
+            let html = `<h3>🎯 Found ${results.length} result${results.length > 1 ? 's' : ''} for "${query}"</h3>`;
+            
+            results.forEach((bitmap, index) => {
+                html += `
+                    <div class="result-card">
+                        <div class="result-header">
+                            <div class="result-title">Bitcoin Bitmap #${bitmap.blockNumber}</div>
+                            <div class="result-badge">Block ${bitmap.blockNumber.toLocaleString()}</div>
+                        </div>
+                        <div class="result-details">
+                            <div class="detail-item">
+                                <div class="detail-label">📦 Block Number</div>
+                                <div class="detail-value" onclick="copyToClipboard('${bitmap.blockNumber}', this)">
+                                    ${bitmap.blockNumber.toLocaleString()}
+                                    <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('${bitmap.blockNumber}', this)">Copy</button>
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">🔗 Inscription ID</div>
+                                <div class="detail-value" onclick="copyToClipboard('${bitmap.inscriptionId}', this)">
+                                    ${bitmap.inscriptionId}
+                                    <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('${bitmap.inscriptionId}', this)">Copy</button>
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">🌐 External Links</div>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <a href="https://ordinals.com/inscription/${bitmap.inscriptionId}" target="_blank" 
+                                       style="background: var(--btc-orange); color: var(--btc-dark); padding: 8px 12px; border-radius: 5px; text-decoration: none; font-size: 0.9em; font-weight: bold;">
+                                        View on Ordinals.com
+                                    </a>
+                                    <a href="https://mempool.space/block/${bitmap.blockNumber}" target="_blank" 
+                                       style="background: var(--btc-dark); color: var(--btc-orange); padding: 8px 12px; border-radius: 5px; text-decoration: none; font-size: 0.9em; font-weight: bold;">
+                                        View Block on Mempool
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            resultsDiv.innerHTML = html;
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchResults').innerHTML = '';
+        }
+
+        function copyToClipboard(text, element) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Visual feedback
+                const btn = element.querySelector('.copy-btn') || element;
+                const originalText = btn.textContent;
+                const originalClass = btn.className;
+                
+                btn.textContent = 'Copied!';
+                btn.className += ' copied';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.className = originalClass;
+                }, 1500);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy to clipboard');
+            });
+        }
+
+        // Add some keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+K or Cmd+K to focus search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            }
+            
+            // Escape to clear search
+            if (e.key === 'Escape') {
+                clearSearch();
+                document.getElementById('searchInput').blur();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -60,7 +60,7 @@ The repository includes a modern web interface (`index.html`) for searching Bitc
 ### GitHub Pages Deployment
 1. **Enable GitHub Pages** in repository settings
 2. **Set source** to "Deploy from a branch" → `main` branch → `/ (root)`
-3. **Access** your search interface at: `https://yourusername.github.io/repositoryname`
+3. **Access** your search interface at: `https://switch-900.github.io/geniidataBitmap`
 
 ### Local Testing
 ```bash
