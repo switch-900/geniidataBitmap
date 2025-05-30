@@ -1,19 +1,54 @@
-# Bitcoin Bitmap Tracker
+# Bitcoin Bitmap Tracker API
 
-A high-performance Bitcoin block bitmap data tracker optimized for GeniiData's free tier API with intelligent sequential processing and gap detection.
+A high-performance Bitcoin block bitmap data tracker with both **static web interface** and **dynamic API server** capabilities. Optimized for GeniiData's free tier API with intelligent sequential processing and gap detection.
 
-## Features
+## 🚀 Deployment Modes
 
+### 1. Static Web Interface (GitHub Pages)
+- **Client-side API detection** in `index.html`
+- **JSON responses** for programmatic access
+- **Zero server costs** - perfect for GitHub Pages
+- **CSV data integration** with OCI (On-Chain Index) fallback
+
+### 2. Dynamic API Server (Express.js)
+- **Full REST API** with Express.js
+- **Real-time WebSocket** integration with mempool.space
+- **Enhanced CSV format** with ordinals.com data
+- **Auto-commit and backup** functionality
+
+## ✨ Features
+
+- **Dual API Architecture**: Both static (GitHub Pages) and dynamic (Express.js) API support
 - **Sequential Block Processing**: Maintains chronological order (blocks 840000+)
 - **Intelligent Gap Detection**: Automatically identifies and queues missing blocks
-- **CSV Auto-Sorting**: Ensures data integrity with periodic sorting
-- **API Optimization**: Handles compression, retries, and error recovery
-- **Free Tier Optimized**: Efficient quota usage (~5% daily on 1000 requests/day)
-- **Progress Tracking**: JSON-based backfill progress monitoring
-- **Web Search Interface**: HTML interface for searching bitmap data
-- **GitHub Pages Ready**: Deploy-ready web interface for public access
+- **Enhanced CSV Format**: Includes sat numbers, addresses, fees, and timestamps
+- **Multi-API Key Support**: Load balancing across multiple GeniiData API keys
+- **Real-time Integration**: WebSocket connection to mempool.space for new blocks
+- **CORS Enabled**: Cross-origin requests supported for web applications
+- **Auto-commit**: Git integration with automatic data commits
+- **Free Tier Optimized**: Efficient quota usage for GeniiData API limits
 
-## Quick Start
+## 🏁 Quick Start
+
+### Option 1: Static Deployment (GitHub Pages)
+
+1. **Fork and Enable GitHub Pages**:
+   ```bash
+   # Fork the repository on GitHub
+   # Go to Settings > Pages > Source: Deploy from branch (main)
+   ```
+
+2. **Access the API**:
+   ```bash
+   # Web Interface
+   https://yourusername.github.io/geniidataBitmap/
+   
+   # API Endpoints
+   https://yourusername.github.io/geniidataBitmap/177700
+   https://yourusername.github.io/geniidataBitmap/?block=177700&format=json
+   ```
+
+### Option 2: Dynamic Server Deployment
 
 1. **Install Dependencies**:
    ```bash
@@ -21,29 +56,77 @@ A high-performance Bitcoin block bitmap data tracker optimized for GeniiData's f
    ```
 
 2. **Configure Environment**:
-   - Copy `.env.example` to `.env`
-   - Add your GeniiData API key:
-     ```
-     GENIIDA_API_KEY=your_api_key_here
-     ```
-
-3. **Run the Tracker**:
    ```bash
-   node script.js
+   cp .env.example .env
+   # Edit .env with your API keys
    ```
 
-## File Structure
+3. **Run Locally**:
+   ```bash
+   npm start        # Production mode
+   npm run dev      # Development mode
+   npm run server   # Use server.js entry point
+   ```
+
+4. **Deploy to Cloud**:
+   - Use the `Procfile` for Heroku deployment
+   - Set environment variables on your hosting platform
+   - Push to GitHub and connect to your cloud provider
+
+## 📊 API Endpoints
+
+### REST API (Express.js Server)
+- `GET /api/block/:blockNumber` - Get specific block data
+- `GET /api/blocks?page=1&limit=50` - Get all blocks with pagination  
+- `GET /api/stats` - Get tracker statistics
+- `GET /api/latest?limit=10` - Get latest blocks with bitmaps
+- `GET /api/search/:query` - Search blocks by inscription ID or sat number
+- `GET /health` - Health check endpoint
+
+### GitHub Pages Compatible API
+- `GET /:blockNumber` - Direct block lookup (e.g., `/177700`)
+- `GET /?block=:blockNumber&format=json` - Query parameter format
+- `GET /?search=:query&format=json` - Search functionality
+- `GET /?format=json` - API documentation
+
+## 📁 File Structure
 
 ```
-├── script.js              # Main application
-├── csv_sorter.js          # Standalone CSV sorting utility
-├── bitmap_data.csv        # Output data (sequential block order)
-├── backfill_progress.json # Progress tracking
-├── index.html             # Web search interface for GitHub Pages
-├── error.log              # Error logging
-├── output.log             # Runtime logging
-└── archive/               # Archived files (tests, docs, old versions)
+├── script.js                    # Enhanced server with API endpoints
+├── server.js                    # Production entry point
+├── index.html                   # Web interface with client-side API
+├── bitmap_data.csv             # Enhanced CSV with ordinals data
+├── backfill_progress.json      # Progress tracking
+├── package.json                # Dependencies and scripts
+├── Procfile                    # Heroku deployment config
+├── README.md                   # Main documentation
+├── fetch-proxies.js            # Proxy fetching utility
+├── .env.example                # Environment configuration template
+└── public/                     # Static files for Express server
+    ├── index.html              # Copy for static serving
+    ├── test-api.html           # API testing interface
+    └── API.md                  # API documentation
 ```
+
+## 🌐 Data Sources Integration
+
+### Historical Data (Blocks 0-839,999)
+- **OCI (On-Chain Index)** from ordinals.com  
+- Real-time lookup via JavaScript module import
+- Cached in browser sessionStorage for performance
+
+### Recent Data (Blocks 840,000+)
+- **GeniiData API** with multi-key load balancing
+- **CSV storage** with enhanced format including:
+  - Block number and inscription ID
+  - Sat numbers and addresses  
+  - Transaction values and fees
+  - Timestamps for tracking
+
+### Real-time Updates
+- **WebSocket integration** with mempool.space
+- Automatic detection of new blocks
+- Priority queue for immediate processing
 
 ## Web Search Interface
 
@@ -87,10 +170,23 @@ The web interface automatically loads the CSV data and provides:
 
 ## CSV Data Format
 
-The output CSV contains Bitcoin block bitmap data with the following structure:
+The output CSV contains Bitcoin block bitmap data with the following optimized structure:
+- **Essential data only**: `block_number,inscription_id`
 - Block numbers in sequential order
-- Bitmap hash data for each block
 - Automatic duplicate removal and gap detection
+- **Dynamic sat number fetching**: Additional data (sat numbers, addresses, values, fees) fetched on-demand from ordinals API when needed
+
+### API Endpoints
+
+#### Get Block Data
+- `GET /api/block/:blockNumber` - Get essential block data from CSV
+- `GET /api/block/:blockNumber?sat=true` - Get block data with sat numbers dynamically fetched from ordinals API
+
+#### Other Endpoints
+- `GET /api/blocks` - Get all blocks with pagination
+- `GET /api/latest` - Get latest blocks with bitmaps
+- `GET /api/search/:query` - Search blocks by inscription ID
+- `GET /api/stats` - Get tracker statistics
 
 ## Utilities
 

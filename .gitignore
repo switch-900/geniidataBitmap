@@ -5,10 +5,22 @@ yarn-debug.log*
 yarn-error.log*
 package-lock.json
 
+# Test files and utilities
+test_*.js
+*test*.js
+*.test.js
+*.spec.js
+
 # Log files - exclude all log outputs
 *.log
 output.log
 error.log
+
+# Temporary and backup files
+*.tmp
+*.bak
+*~
+.DS_Store
 
 # Progress tracking files (exclude from Git but keep CSV data)
 backfill_progress.json

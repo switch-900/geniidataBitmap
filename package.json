@@ -1,11 +1,13 @@
-{  "name": "bitcoin-bitmap-tracker",
+{
+  "name": "bitcoin-bitmap-tracker",
   "version": "2.1.0",
   "description": "High-performance Bitcoin block bitmap tracker with sequential processing and intelligent gap detection",
-  "main": "script.js",
-  "scripts": {
+  "main": "script.js",  "scripts": {
     "start": "node script.js",
-    "sort-csv": "node csv_sorter.js"
-  },  "keywords": [
+    "dev": "nodemon script.js",
+    "server": "node server.js"
+  },
+  "keywords": [
     "bitcoin",
     "blockchain",
     "bitmap",
@@ -13,12 +15,18 @@
     "geniidata",
     "api",
     "sequential-processing",
-    "gap-detection"
+    "gap-detection",
+    "express",
+    "websocket",
+    "rest-api"
   ],
   "author": "Your Name",
-  "license": "MIT",  "dependencies": {
-    "ws": "^8.14.2",
-    "dotenv": "^16.3.1"
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "ws": "^8.18.2"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
