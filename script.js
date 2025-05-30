@@ -9,6 +9,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const { execSync } = require('child_process');
 
 // Configuration
 const CONFIG = {
@@ -42,10 +43,15 @@ const CONFIG = {
     REQUEST_INTERVAL: parseInt(process.env.REQUEST_INTERVAL) || 220, // 220ms = ~4.5 requests/second
     RETRY_DELAY: parseInt(process.env.RETRY_DELAY) || 5000,
     MAX_RETRIES: parseInt(process.env.MAX_RETRIES) || 2,
-    
-    // Safety buffers
+      // Safety buffers
     DAILY_LIMIT_BUFFER: parseInt(process.env.DAILY_LIMIT_BUFFER) || 50,
-    RATE_LIMIT_BUFFER: parseFloat(process.env.RATE_LIMIT_BUFFER) || 0.9
+    RATE_LIMIT_BUFFER: parseFloat(process.env.RATE_LIMIT_BUFFER) || 0.9,
+    
+    // Git Auto-Commit Settings
+    AUTO_COMMIT_CSV: process.env.AUTO_COMMIT_CSV !== 'false', // Default to true
+    GIT_COMMIT_MESSAGE: process.env.GIT_COMMIT_MESSAGE || 'Update Bitcoin bitmap data - Block {blockNumber}',
+    GIT_PUSH_TO_REMOTE: process.env.GIT_PUSH_TO_REMOTE !== 'false', // Default to true
+    GIT_BRANCH: process.env.GIT_BRANCH || 'main'
 };
 
 class BitmapTracker {
@@ -296,6 +302,12 @@ class BitmapTracker {
             fs.appendFileSync(CONFIG.CSV_FILE, row);
             console.log(`📝 ✅ Block ${blockNumber}: ${inscriptionId}`);
             
+            // Auto-commit to Git after writing CSV data
+            this.autoCommitToGit(blockNumber, inscriptionId).catch(error => {
+                // Log but don't stop execution if Git operations fail
+                console.log(`⚠️ Git auto-commit error: ${error.message.substring(0, 100)}...`);
+            });
+            
             // Trigger periodic CSV sorting to maintain order
             this.scheduledSortCheck++;
             if (this.scheduledSortCheck >= 50) { // Sort every 50 new entries
@@ -306,7 +318,7 @@ class BitmapTracker {
             // No bitmap found - don't write to CSV but log it
             console.log(`📝 📭 Block ${blockNumber}: no bitmap`);
         }
-    }    // Sort CSV file to maintain sequential order
+    }// Sort CSV file to maintain sequential order
     async sortCSVFile() {
         try {
             console.log('🔄 Sorting CSV to maintain sequential order...');
@@ -415,11 +427,57 @@ class BitmapTracker {
                 return false;
             }
 
-            return true;
-
-        } catch (error) {
+            return true;        } catch (error) {
             this.logError('CSV_VALIDATION', 0, `Failed to validate CSV order: ${error.message}`);
             return false;
+        }
+    }
+
+    // Auto-commit CSV changes to Git after each block
+    async autoCommitToGit(blockNumber, inscriptionId) {
+        if (!CONFIG.AUTO_COMMIT_CSV) {
+            return; // Auto-commit disabled
+        }
+
+        try {
+            // Ensure CSV file is tracked by git
+            execSync('git add bitmap_data.csv', { cwd: process.cwd(), stdio: 'pipe' });
+            
+            // Create commit message with block number
+            const commitMessage = CONFIG.GIT_COMMIT_MESSAGE.replace('{blockNumber}', blockNumber);
+            const hasChanges = execSync('git diff --cached --quiet || echo "changes"', { 
+                cwd: process.cwd(), 
+                stdio: 'pipe' 
+            }).toString().trim();
+            
+            if (hasChanges === 'changes') {
+                // Commit the changes
+                execSync(`git commit -m "${commitMessage}"`, { 
+                    cwd: process.cwd(), 
+                    stdio: 'pipe' 
+                });
+                
+                console.log(`📤 ✅ Git commit: Block ${blockNumber}`);
+                
+                // Push to remote if enabled
+                if (CONFIG.GIT_PUSH_TO_REMOTE) {
+                    try {
+                        execSync(`git push origin ${CONFIG.GIT_BRANCH}`, { 
+                            cwd: process.cwd(), 
+                            stdio: 'pipe',
+                            timeout: 10000 // 10 second timeout for push
+                        });
+                        console.log(`📤 🌐 Pushed to remote: Block ${blockNumber}`);
+                    } catch (pushError) {
+                        console.log(`⚠️ Git push failed: ${pushError.message.substring(0, 100)}...`);
+                        // Continue operation even if push fails
+                    }
+                }
+            }
+            
+        } catch (error) {
+            console.log(`⚠️ Git auto-commit failed: ${error.message.substring(0, 100)}...`);
+            // Don't stop operation for Git failures
         }
     }
 

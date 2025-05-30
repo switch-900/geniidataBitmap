@@ -5,16 +5,12 @@ yarn-debug.log*
 yarn-error.log*
 package-lock.json
 
-# Data files - exclude all CSV and data outputs
-*.csv
-bitmap_data.*
-
 # Log files - exclude all log outputs
 *.log
 output.log
 error.log
 
-# Progress tracking files
+# Progress tracking files (exclude from Git but keep CSV data)
 backfill_progress.json
 
 # Environment variables
